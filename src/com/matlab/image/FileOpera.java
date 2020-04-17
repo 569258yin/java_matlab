@@ -1,115 +1,116 @@
 package com.matlab.image;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.BufferUnderflowException;
-
-import javax.imageio.ImageIO;
 
 /**
- * Í¼Æ¬ÏñËØ²Ù×÷Àà
- * @author YH
+ * å›¾ç‰‡åƒç´ æ“ä½œç±»
  *
+ * @author YH
  */
 public class FileOpera {
-	
-	private static FileOpera Instance = null;
-	
-	public static FileOpera getInstance() {
-		if(Instance == null){
-			Instance = new FileOpera();
-		}
-		return Instance;
-	}
-	
-	private FilePath filepath = FilePath.getInstance();
-	private int width;
-	private int height;
-	private int[] rgb = new int[3];
-	private int[][][] rgb_num; 
-	private BufferedImage bi;
 
-	private FileOpera() {
-		String uri = filepath.getUripath();
-		File file = new File(uri);
-		try {
-			bi = ImageIO.read(file);
-			width =  bi.getWidth();
-			height = bi.getHeight();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    private static FileOpera Instance = null;
 
-	}
-	
-	/**
-	 * ·µ»ØÕû¸öÍ¼ÏñÏñËØµãµÄ»Ò¶ÈÖµ
-	 * @return
-	 */
-	public int[][] rgbRead2gray() {
-		int[][] ave = new int[width][height];
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				ave[i][j] = bi.getRGB(i, j);
-			}
-		}
-		return ave;
-	}
-	
-	/**
-	 * ¶ÁÈ¡³öÍ¼ÏñµÄrgbÈıÍ¨µÀÏñËØÖµ
-	 * @return
-	 */
-	public int[][][] RgbRead() {
-		int ave;
-		rgb_num = new int[width][height][3];
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				ave = bi.getRGB(i, j);
-				rgb = ImageUtil.MathToRgb(ave);
-				rgb_num[i][j][0] = rgb[0];
-				rgb_num[i][j][1] = rgb[1];
-				rgb_num[i][j][2] = rgb[2];
-			}
-		}
-		return rgb_num;
-	}
-	
-	/**
-	 * ÖØĞÂÉèÖÃÍ¼ÏñµÄrgbÏñËØ
-	 * @param rgb
-	 * @throws Exception
-	 */
-	public void RgbSet(int[][][] rgb) throws Exception {
-		BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		int math = 0;
-		int[] r = new int[3];
-		String str = filepath.getUripath_new();
-		File file = new File(str);
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				r[0] = rgb[i][j][0];
-				r[1] = rgb[i][j][1];
-				r[2] = rgb[i][j][2];
-				math = ImageUtil.RgbToMath(r);
-				bi.setRGB(i, j, math);
-				//ÎÒÓĞÒ»¸öÊ®Áù½øÖÆ×Ö·û´®  "FF5D7E"£¬ÔõÃ´°ÑËü×ª±ä³É
-				//				0XFF5D7E µÄintĞÍ
-				//Integer.parseInt ²»ĞĞ 
-				//Ô­Òò¼ÆËã´íÎó
-				//bi.setRGB(i, j, 0XFF5D7E);
-			}
-		}
-		ImageIO.write(bi, "png",file);//Ğ´ÈëĞÂµÄÍ¼Æ¬
-//		System.out.println("success");
-	}
-	public int getWidth() {
-		return width;
-	}
-	
-	public int getHeight() {
-		return height;
-	}
+    public static FileOpera getInstance() {
+        if (Instance == null) {
+            Instance = new FileOpera();
+        }
+        return Instance;
+    }
+
+    private FilePath filepath = FilePath.getInstance();
+    private int width;
+    private int height;
+    private int[] rgb = new int[3];
+    private int[][][] rgb_num;
+    private BufferedImage bi;
+
+    private FileOpera() {
+        String uri = filepath.getUripath();
+        File file = new File(uri);
+        try {
+            bi = ImageIO.read(file);
+            width = bi.getWidth();
+            height = bi.getHeight();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * è¿”å›æ•´ä¸ªå›¾åƒåƒç´ ç‚¹çš„ç°åº¦å€¼
+     *
+     * @return
+     */
+    public int[][] rgbRead2gray() {
+        int[][] ave = new int[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                ave[i][j] = bi.getRGB(i, j);
+            }
+        }
+        return ave;
+    }
+
+    /**
+     * è¯»å–å‡ºå›¾åƒçš„rgbä¸‰é€šé“åƒç´ å€¼
+     *
+     * @return
+     */
+    public int[][][] RgbRead() {
+        int ave;
+        rgb_num = new int[width][height][3];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                ave = bi.getRGB(i, j);
+                rgb = ImageUtil.MathToRgb(ave);
+                rgb_num[i][j][0] = rgb[0];
+                rgb_num[i][j][1] = rgb[1];
+                rgb_num[i][j][2] = rgb[2];
+            }
+        }
+        return rgb_num;
+    }
+
+    /**
+     * é‡æ–°è®¾ç½®å›¾åƒçš„rgbåƒç´ 
+     *
+     * @param rgb
+     * @throws Exception
+     */
+    public void RgbSet(int[][][] rgb) throws Exception {
+        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int math = 0;
+        int[] r = new int[3];
+        String str = filepath.getUripath_new();
+        File file = new File(str);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                r[0] = rgb[i][j][0];
+                r[1] = rgb[i][j][1];
+                r[2] = rgb[i][j][2];
+                math = ImageUtil.RgbToMath(r);
+                bi.setRGB(i, j, math);
+                //æˆ‘æœ‰ä¸€ä¸ªåå…­è¿›åˆ¶å­—ç¬¦ä¸²  "FF5D7E"ï¼Œæ€ä¹ˆæŠŠå®ƒè½¬å˜æˆ
+                //0XFF5D7E çš„intå‹
+                //Integer.parseInt ä¸è¡Œ
+                //åŸå› è®¡ç®—é”™è¯¯
+                //bi.setRGB(i, j, 0XFF5D7E);
+            }
+        }
+        //å†™å…¥æ–°çš„å›¾ç‰‡
+        ImageIO.write(bi, "png", file);
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }

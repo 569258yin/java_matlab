@@ -1,19 +1,11 @@
 package application;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import com.matlab.image.BinaryRGB;
+import com.matlab.image.BinaryRgbOperator;
 import com.matlab.image.DealTask;
 import com.matlab.image.FilePath;
 import com.matlab.image.ImageUtil;
 import com.matlab.image.ReStart;
 import com.matlab.image.Rgb2Gray;
-
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -32,282 +24,251 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 
 public class Main extends Application {
-	private MyGridPane root = new MyGridPane();
-	private int valus1=0,valus2=0,valus3=0;
-	private File file_new;
-	private Image image2;
-	private ImageView view2;
-	private Button btnStart,btnGray,btnBinary;
-	private TextField text;
-	private ScrollBar s1,s2,s3;
-	private FilePath filepath = FilePath.getInstance();
-	int i = 0;
+    private MyGridPane root = new MyGridPane();
+    private volatile int rValues = 0, bValues = 0, gValues = 0;
+    private File fileNew;
+    private Image image2;
+    private ImageView view2;
+    private Button btnStart, btnGray, btnBinary;
+    private TextField text;
+    private ScrollBar s1, s2, s3;
+    private FilePath filepath = FilePath.getInstance();
 
-	private ExecutorService threadAgent = Executors.newSingleThreadExecutor();
+    private ExecutorService threadAgent = Executors.newCachedThreadPool();
 
-	@Override
-	public void start(Stage primaryStage) {
-		try {
-			//¼ÓÔØÍ¼Æ¬×ÊÔ´
-			//			File file = new  File("C:/004.png");
-			if(!filepath.getFile().exists()){
-				System.out.println("ÇëÉèÖÃFilePathÎÄ¼şÂ·¾¶ÕıÈ·£¡");
-				throw new FileNotFoundException();
-			}
-			Image image = new Image(filepath.getFile().toURI().toURL().toString());
-			//			file_new = new  File("C:/004_new.png");
-			ImageView view1 = new ImageView(image);
-			image2 = new Image(filepath.getFile().toURI().toURL().toString());
-			view2 = new ImageView(image2);
-			file_new = filepath.getFile_new();
-			GridPane gridpane = new GridPane();    //Í¼Æ¬µÄ²¼¾Ö
-			gridpane.setHgap(20);
-			gridpane.setVgap(20);
-			gridpane.setPadding(new Insets(10, 10, 10, 10));
-			gridpane.add(view1, 1, 1);
-			gridpane.add(view2, 2, 1);
+    @Override
+    public void start(Stage primaryStage) {
+        try {
+            //åŠ è½½å›¾ç‰‡èµ„æº
+            if (!filepath.getFile().exists()) {
+                System.out.println("è¯·è®¾ç½®FilePathæ–‡ä»¶è·¯å¾„æ­£ç¡®ï¼");
+                throw new FileNotFoundException();
+            }
+            Image image = new Image(filepath.getFile().toURI().toURL().toString());
+            ImageView view1 = new ImageView(image);
+            image2 = new Image(filepath.getFile().toURI().toURL().toString());
+            view2 = new ImageView(image2);
+            fileNew = filepath.getFile_new();
+            //å›¾ç‰‡çš„å¸ƒå±€
+            GridPane gridpane = new GridPane();
+            gridpane.setHgap(20);
+            gridpane.setVgap(20);
+            gridpane.setPadding(new Insets(10, 10, 10, 10));
+            gridpane.add(view1, 1, 1);
+            gridpane.add(view2, 2, 1);
 
-			GridPane textpane = new GridPane();
+            GridPane textPane = new GridPane();
+            Label uriLabel = new Label("ä½ é€‰æ‹©çš„å›¾ç‰‡è·¯å¾„ï¼š");
+            TextField uri = new TextField();
+            Button search = new Button("æµè§ˆå›¾ç‰‡");
+            textPane.setHgap(5);
+            textPane.setPadding(new Insets(10, 0, 0, 0));
+            textPane.add(uriLabel, 2, 1);
+            textPane.add(uri, 4, 1);
+            textPane.add(search, 6, 1);
+            //æŒ‰é’®çš„è®¾ç½®
+            GridPane btnPane = new GridPane();
+            btnPane.setHgap(20);
+            btnPane.setPadding(new Insets(10, 0, 0, 0));
+            btnStart = new Button("æ¢å¤é»˜è®¤");
+            btnGray = new Button("ç°åº¦åŒ–å¤„ç†");
+            btnBinary = new Button("äºŒå€¼åŒ–å¤„ç†");
+            text = new TextField();
+            text.setText("  è¯·æ‰§è¡Œä½ éœ€è¦çš„æ“ä½œ  ");
 
+            text.setEditable(false);
+            btnPane.add(btnStart, 2, 1);
+            btnPane.add(btnGray, 4, 1);
+            btnPane.add(btnBinary, 6, 1);
+            btnPane.add(text, 8, 1);
+            //å°†ä¸‰ä¸ªå¸ƒå±€æ”¾åˆ°ä¸€ä¸ªä¸»å¸ƒå±€ä¸­
+            VBox box = new VBox(textPane, btnPane, root.addPane(), gridpane);
+            box.setPadding(new Insets(10));
+            box.setSpacing(10);
+            Scene scene = new Scene(box, 1280, 700);
+            s1 = root.getS1();
+            s2 = root.getS2();
+            s3 = root.getS3();
+            //åˆå§‹åŒ–æ‰§è¡Œä¸€æ¬¡æ¢å¤é»˜è®¤
+            Restart();
+            //çº¢è‰²é€šé“ç›‘å¬äº‹ä»¶
+            s1.valueProperty().addListener(new ChangeListener<Number>() {
 
-			Label uriLabel = new Label("ÄãÑ¡ÔñµÄÍ¼Æ¬Â·¾¶£º");
-			TextField uri = new TextField();
-			Button serch = new Button("ä¯ÀÀÍ¼Æ¬");
-			textpane.setHgap(5);
-			textpane.setPadding(new Insets(10, 0, 0, 0));
-			textpane.add(uriLabel, 2, 1);
-			textpane.add(uri, 4, 1);
-			textpane.add(serch, 6, 1);
-			//°´Å¥µÄÉèÖÃ
-			GridPane btnPane = new GridPane();
-			btnPane.setHgap(20);
-			btnPane.setPadding(new Insets(10, 0, 0, 0));
-			btnStart = new Button("»Ö¸´Ä¬ÈÏ");
-			btnGray = new Button("»Ò¶È»¯´¦Àí");
-			btnBinary = new Button("¶şÖµ»¯´¦Àí");
-			text = new TextField();
-			text.setText("  ÇëÖ´ĞĞÄãĞèÒªµÄ²Ù×÷  ");
+                @Override
+                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                    //é˜²æ­¢è¿‡å¿«ç‚¹å‡»å¯¼è‡´å¯åŠ¨å¤šæ¬¡çº¿ç¨‹
+                    if (!ImageUtil.isFastClick()) {
+                        Future<Boolean> future = threadAgent.submit(new DealTask(newValue.intValue(), bValues, gValues));
+                        try {
+                            while (true) {
+                                if (future.isDone()) {
+                                    if (future.get()) {
+                                        image2 = new Image(fileNew.toURI().toURL().toString());
+                                        view2.setImage(image2);
+                                        break;
+                                    }
+                                    break;
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+            //è“è‰²é€šé“ç›‘å¬äº‹ä»¶
+            s2.valueProperty().addListener(new ChangeListener<Number>() {
 
-			text.setEditable(false);
-			btnPane.add(btnStart, 2, 1);
-			btnPane.add(btnGray, 4, 1);
-			btnPane.add(btnBinary, 6, 1);
-			btnPane.add(text, 8, 1);
-			//½«Èı¸ö²¼¾Ö·Åµ½Ò»¸öÖ÷²¼¾ÖÖĞ
-			VBox box = new VBox(textpane,btnPane,root.addPane(),gridpane);
-			box.setPadding(new Insets(10));
-			box.setSpacing(10);
-			Scene scene = new Scene(box,1280,700);
-			s1 = root.getS1();
-			s2 = root.getS2();
-			s3 = root.getS3();
-			//³õÊ¼»¯Ö´ĞĞÒ»´Î»Ö¸´Ä¬ÈÏ
-			Restart();
-			//ºìÉ«Í¨µÀ¼àÌıÊÂ¼ş
-			s1.valueProperty().addListener(new ChangeListener<Number>() {
+                @Override
+                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                    //é˜²æ­¢è¿‡å¿«ç‚¹å‡»å¯¼è‡´å¯åŠ¨å¤šæ¬¡çº¿ç¨‹
+                    if (ImageUtil.isFastClick()) {
+                        return;
+                    }
+                    Future<Boolean> future = threadAgent.submit(new DealTask(rValues, newValue.intValue(), gValues));
+                    try {
+                        while (true) {
+                            if (future.isDone()) {
+                                if (future.get()) {
+                                    image2 = new Image(fileNew.toURI().toURL().toString());
+                                    view2.setImage(image2);
+                                    break;
+                                }
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-				@Override
-				public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-					//					try {
-					//						image2 = new Image(file_new.toURI().toURL().toString());
-					//						view2.setImage(image2);
-					//					} catch (MalformedURLException e) {
-					//						// TODO Auto-generated catch block
-					//						e.printStackTrace();
-					//					}
-					//·ÀÖ¹¹ı¿ìµã»÷µ¼ÖÂÆô¶¯¶à´ÎÏß³Ì
-					if(!ImageUtil.isFastClick()){
-						System.out.println("OnClick");
-						valus1 = (int)s1.getValue();
-						Future<Boolean> future = threadAgent.submit(new DealTask(valus1,valus2,valus3));
-						try {
-							while(true){
-								if(future.isDone()){
-									if(future.get()){
-										image2 = new Image(file_new.toURI().toURL().toString());
-										System.out.println("SetIamge");
-										view2.setImage(image2);
-										break;
-									}
-									break;
-								}
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			});
-			//À¶É«Í¨µÀ¼àÌıÊÂ¼ş
-			s2.valueProperty().addListener(new ChangeListener<Number>() {
+                }
+            });
+            //ç»¿è‰²é€šé“ç›‘å¬äº‹ä»¶
+            s3.valueProperty().addListener(new ChangeListener<Number>() {
 
-				@Override
-				public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-					//					try {
-					//						image2 = new Image(file_new.toURI().toURL().toString());
-					//						view2.setImage(image2);
-					//					} catch (MalformedURLException e) {
-					//						// TODO Auto-generated catch block
-					//						e.printStackTrace();
-					//					}
-					//·ÀÖ¹¹ı¿ìµã»÷µ¼ÖÂÆô¶¯¶à´ÎÏß³Ì
-					if(ImageUtil.isFastClick()){
-						return;
-					}
-					valus2 = (int)s2.getValue();
-					Future<Boolean> future = threadAgent.submit(new DealTask(valus1,valus2,valus3));
-					try {
-						while(true){
-							if(future.isDone()){
-								if(future.get()){
-									image2 = new Image(file_new.toURI().toURL().toString());
-									System.out.println("SetIamge");
-									view2.setImage(image2);
-									break;
-								}
-								break;
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+                @Override
+                public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                    //é˜²æ­¢è¿‡å¿«ç‚¹å‡»å¯¼è‡´å¯åŠ¨å¤šæ¬¡çº¿ç¨‹
+                    if (ImageUtil.isFastClick()) {
+                        return;
+                    }
+                    view2.setImage(image2);
+                    Future<Boolean> future = threadAgent.submit(new DealTask(rValues, bValues, newValue.intValue()));
+                    try {
+                        while (true) {
+                            if (future.isDone()) {
+                                if (future.get()) {
+                                    image2 = new Image(fileNew.toURI().toURL().toString());
+                                    view2.setImage(image2);
+                                    break;
+                                }
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-				}
-			});
-			//ÂÌÉ«Í¨µÀ¼àÌıÊÂ¼ş
-			s3.valueProperty().addListener(new ChangeListener<Number>() {
+                }
+            });
+            //æ¢å¤é»˜è®¤è®¾ç½®
+            btnStart.setOnAction(new EventHandler<ActionEvent>() {
 
-				@Override
-				public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-					//					try {
-					//						image2 = new Image(file_new.toURI().toURL().toString());
-					//					} catch (MalformedURLException e) {
-					//						// TODO Auto-generated catch block
-					//						e.printStackTrace();
-					//					}
-					//·ÀÖ¹¹ı¿ìµã»÷µ¼ÖÂÆô¶¯¶à´ÎÏß³Ì
-					if(ImageUtil.isFastClick()){
-						return;
-					}
-					view2.setImage(image2);
-					valus3 = (int)s3.getValue();
-					Future<Boolean> future = threadAgent.submit(new DealTask(valus1,valus2,valus3));
-					try {
-						while(true){
-							if(future.isDone()){
-								if(future.get()){
-									image2 = new Image(file_new.toURI().toURL().toString());
-									System.out.println("SetIamge");
-									view2.setImage(image2);
-									break;
-								}
-								break;
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+                @Override
+                public void handle(ActionEvent event) {
+                    Restart();
+                }
+            });
+            //ç°åº¦å˜åŒ–
+            btnGray.setOnAction(new EventHandler<ActionEvent>() {
 
-				}
-			});
-			//»Ö¸´Ä¬ÈÏÉèÖÃ
-			btnStart.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
 
-				@Override
-				public void handle(ActionEvent event) {
-					Restart();
-				}
-			});
-			//»Ò¶È±ä»¯
-			btnGray.setOnAction(new EventHandler<ActionEvent>() {
+                    Rgb2Gray r = new Rgb2Gray();
+                    r.run();
+                    try {
+                        image2 = new Image(fileNew.toURI().toURL().toString());
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                    view2.setImage(image2);
 
-				@Override
-				public void handle(ActionEvent event) {
+                }
+            });
+            //äºŒå€¼åŒ–å˜åŒ–
+            btnBinary.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
 
-					Rgb2Gray r = new Rgb2Gray();
-					r.Myrun();
-					try {
-						image2 = new Image(file_new.toURI().toURL().toString());
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					view2.setImage(image2);
+                    BinaryRgbOperator b = new BinaryRgbOperator();
+                    b.run();
 
-				}
-			});
-			//¶şÖµ»¯±ä»¯
-			btnBinary.setOnAction(new EventHandler<ActionEvent>() {
+                    try {
+                        image2 = new Image(fileNew.toURI().toURL().toString());
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                    view2.setImage(image2);
+                    primaryStage.show();
 
-				@Override
-				public void handle(ActionEvent event) {
+                }
+            });
+            search.setOnAction(new EventHandler<ActionEvent>() {
 
-					BinaryRGB b = new BinaryRGB();
-					b.Myrun();
+                @Override
+                public void handle(ActionEvent event) {
+                    FileChooser choose = new FileChooser();
+                    choose.setTitle("è¯·é€‰æ‹©æ–‡ä»¶ï¼š");
+                    File values = choose.showOpenDialog(null);
+                    try {
+                        filepath.setFile(values);
+                        String path = values.toURI().toURL().toString();
+                        filepath.setUripath(path);
+                        uri.setText(values.toString());
+                        uri.setEditable(false);
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
 
-					try {
-						image2 = new Image(file_new.toURI().toURL().toString());
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					view2.setImage(image2);
-					primaryStage.show();
+                }
+            });
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-				}
-			});
-			serch.setOnAction(new EventHandler<ActionEvent>() {
+    /**
+     * æ¢å¤é»˜è®¤å€¼å¾—æ–¹æ³•
+     */
+    public void Restart() {
 
-				@Override
-				public void handle(ActionEvent event) {
-					FileChooser choose = new FileChooser();
-					choose.setTitle("ÇëÑ¡ÔñÎÄ¼ş£º");
-					File values = choose.showOpenDialog(null);
-					try {
-						filepath.setFile(values);
-						String path = values.toURI().toURL().toString();
-						filepath.setUripath(path);
-						uri.setText(values.toString());
-						uri.setEditable(false);
-						//						Thread thredMain = new Thread();
-						//						thredMain.start();
-					} catch (MalformedURLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-				}
-			});
-
-			primaryStage.setScene(scene);
-			primaryStage.show();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	//»Ö¸´Ä¬ÈÏÖµµÃ·½·¨
-	public void Restart() {
-
-		ReStart s = new ReStart();
-		s.myRun();
-		try {
-			image2 = new Image(file_new.toURI().toURL().toString());
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		view2.setImage(image2);
-		s1.setValue(0);
-		s2.setValue(0);
-		s3.setValue(0);
-	}
+        ReStart s = new ReStart();
+        s.myRun();
+        try {
+            image2 = new Image(fileNew.toURI().toURL().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        view2.setImage(image2);
+        s1.setValue(0);
+        s2.setValue(0);
+        s3.setValue(0);
+    }
 
 
-
-	public static void main(String[] args) {
-		launch(args);
-	}
+    public static void main(String[] args) {
+        launch(args);
+    }
 }

@@ -13,6 +13,9 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
+/**
+ * @author yinhao
+ */
 public class ImageIo extends JComponent{
 
 	private static final long serialVersionUID = -2236160343614397287L; 

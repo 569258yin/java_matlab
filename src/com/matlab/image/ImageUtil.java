@@ -1,103 +1,107 @@
 package com.matlab.image;
 
+/**
+ * @author yinhao
+ */
 public class ImageUtil {
-	
-	/**
-	 * ¸ù¾İ´«Èë²ÎÊı£¬½«Æä¶ÔÓ¦µÄrgbÈıÉ«ÏñËØÏà¼Ó
-	 * @param rgb  Êı×é
-	 * @param rnum   ºìÍ¨µÀ
-	 * @param gnum   ÂÌÍ¨µÀ
-	 * @param bnum   À¶Í¨µÀ
-	 * @return
-	 */
-	public static int[][][] add(int[][][] rgb,int rnum,int gnum,int bnum) {  //É«²ÊÔöÇ¿
-		FileOpera op = FileOpera.getInstance();
-		int width = op.getWidth();
-		int height = op.getHeight();
-		
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				rgb[i][j][0] = rgb[i][j][0]+rnum;  //ºìÍ¨µÀ
-				rgb[i][j][1] = rgb[i][j][1]+gnum;	//ÂÌÍ¨µÀ
-				rgb[i][j][2] = rgb[i][j][2]+bnum;	//À¶Í¨µÀ
-				if (rgb[i][j][0]>255) {				//Ö´ĞĞÁË½Ø¶ÏËã·¨
-					rgb[i][j][0] = 255;
-				}else if(rgb[i][j][0] < 0){
-					rgb[i][j][0] = 0;
-				}
-				if (rgb[i][j][1]>255) {
-					rgb[i][j][1] = 255;
-				}else if(rgb[i][j][1] < 0){
-					rgb[i][j][1] = 0;
-				}
-				if (rgb[i][j][2]>255) {
-					rgb[i][j][2] = 255;
-				}else if(rgb[i][j][2] < 0){
-					rgb[i][j][2] = 0;
-				}
-			}
-		}
 
-		return rgb;
-	}
-	
-	
-	/**
-	 *  16½øÖÆµÄ #00ffee ×ª»»Îª rgb Êı×éÏà»¥×ª»»
-	 * @param math
-	 * @return
-	 */
-	public static int[] MathToRgb(int math){
-		int[] rgb_n = new int[3];
-		rgb_n[0] = (math & 0xff0000) >> 16;
-		rgb_n[1] = (math & 0xff00) >> 8;
-		rgb_n[2] = (math & 0xff);
+    /**
+     * æ ¹æ®ä¼ å…¥å‚æ•°ï¼Œå°†å…¶å¯¹åº”çš„rgbä¸‰è‰²åƒç´ ç›¸åŠ 
+     *
+     * @param rgb  æ•°ç»„
+     * @param rnum çº¢é€šé“
+     * @param gnum ç»¿é€šé“
+     * @param bnum è“é€šé“
+     * @return
+     */
+    public static int[][][] add(int[][][] rgb, int rnum, int gnum, int bnum) {  //è‰²å½©å¢å¼º
+        FileOpera op = FileOpera.getInstance();
+        int width = op.getWidth();
+        int height = op.getHeight();
 
-		return  rgb_n;
-	}
-	
-	/**
-	 * rgb Êı×é ×ª»»Îª   16½øÖÆµÄ #00ffee 
-	 * @param rgb
-	 * @return
-	 * @throws Exception
-	 */
-	public static int RgbToMath(int[] rgb) throws Exception{
-		String m1 = Integer.toHexString(rgb[0]);
-		String m2 = Integer.toHexString(rgb[1]);
-		String m3 = Integer.toHexString(rgb[2]);
-		if (m1.length()<2) {
-			m1 = "0"+m1;
-		}
-		if (m2.length()<2) {
-			m2 = "0"+m2;
-		}
-		if (m3.length()<2) {
-			m3 = "0"+m3;
-		}
-		String max;	
-		max=m1+m2+m3; 
-		//		System.out.println(max);
-		int newNumber = Integer.valueOf(max,16);
-		//		System.out.println(newNumber);
-		//		m = m.toUpperCase();
-		//		System.out.println(m);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                //çº¢é€šé“
+                rgb[i][j][0] = rgb[i][j][0] + rnum;
+                //ç»¿é€šé“
+                rgb[i][j][1] = rgb[i][j][1] + gnum;
+                //è“é€šé“
+                rgb[i][j][2] = rgb[i][j][2] + bnum;
+                //æ‰§è¡Œäº†æˆªæ–­ç®—æ³•
+                if (rgb[i][j][0] > 255) {
+                    rgb[i][j][0] = 255;
+                } else if (rgb[i][j][0] < 0) {
+                    rgb[i][j][0] = 0;
+                }
+                if (rgb[i][j][1] > 255) {
+                    rgb[i][j][1] = 255;
+                } else if (rgb[i][j][1] < 0) {
+                    rgb[i][j][1] = 0;
+                }
+                if (rgb[i][j][2] > 255) {
+                    rgb[i][j][2] = 255;
+                } else if (rgb[i][j][2] < 0) {
+                    rgb[i][j][2] = 0;
+                }
+            }
+        }
 
-		return newNumber;  
+        return rgb;
+    }
 
-	}
-	
-	private static long lastClickTime = -1;
-	/** 
-	 * ·ÀÖ¹¹ı¿ìµã»÷¶à¸öÊ±¼ä
-	 * @return
-	 */
-	public synchronized static boolean isFastClick() {
-		long time = System.currentTimeMillis();
-		if ( time - lastClickTime < 500) {   
-			return true;   
-		}   
-		lastClickTime = time;   
-		return false;   
-	}
+
+    /**
+     * 16è¿›åˆ¶çš„ #00ffee è½¬æ¢ä¸º rgb æ•°ç»„ç›¸äº’è½¬æ¢
+     *
+     * @param math
+     * @return
+     */
+    public static int[] MathToRgb(int math) {
+        int[] rgb_n = new int[3];
+        rgb_n[0] = (math & 0xff0000) >> 16;
+        rgb_n[1] = (math & 0xff00) >> 8;
+        rgb_n[2] = (math & 0xff);
+
+        return rgb_n;
+    }
+
+    /**
+     * rgb æ•°ç»„ è½¬æ¢ä¸º   16è¿›åˆ¶çš„ #00ffee
+     *
+     * @param rgb
+     * @return
+     * @throws Exception
+     */
+    public static int RgbToMath(int[] rgb) throws Exception {
+        String m1 = Integer.toHexString(rgb[0]);
+        String m2 = Integer.toHexString(rgb[1]);
+        String m3 = Integer.toHexString(rgb[2]);
+        if (m1.length() < 2) {
+            m1 = "0" + m1;
+        }
+        if (m2.length() < 2) {
+            m2 = "0" + m2;
+        }
+        if (m3.length() < 2) {
+            m3 = "0" + m3;
+        }
+        String max;
+        max = m1 + m2 + m3;
+        return Integer.valueOf(max, 16);
+    }
+
+    private static long lastClickTime = -1;
+
+    /**
+     * é˜²æ­¢è¿‡å¿«ç‚¹å‡»å¤šä¸ªæ—¶é—´
+     *
+     * @return
+     */
+    public synchronized static boolean isFastClick() {
+        long time = System.currentTimeMillis();
+        if (time - lastClickTime < 500) {
+            return true;
+        }
+        return false;
+    }
 }

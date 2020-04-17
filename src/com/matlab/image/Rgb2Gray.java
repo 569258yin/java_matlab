@@ -1,35 +1,36 @@
 package com.matlab.image;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
+/**
+ * @author yinhao
+ * ç°åº¦å¤„ç†æ–¹æ³•
+ */
+public class Rgb2Gray {
 
-public class Rgb2Gray{
-	/*
-	 * »Ò¶È´¦Àí·½·¨
-	 * 
-	 */
-	private FileOpera op = FileOpera.getInstance();
-	private FilePath filepath = FilePath.getInstance();
-	int width = op.getWidth();
-	int height = op.getHeight();
-	public void Myrun() {
-		int[][] ave = op.rgbRead2gray();
-		//»Ò¶È±ä»¯µÄ²Ù×÷
-		BufferedImage grayImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);//ÖØµã£¬¼¼ÇÉÔÚÕâ¸ö²ÎÊıBufferedImage.TYPE_BYTE_GRAY  
-		for(int i= 0 ; i < width ; i++){  
-			for(int j = 0 ; j < height; j++){    
-				grayImage.setRGB(i, j, ave[i][j]);     
-			}  
-		}  
-		String str = filepath.getUripath_new();
-		try {
-			ImageIO.write(grayImage, "png", new File(str));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    private FileOpera op = FileOpera.getInstance();
+    private FilePath filepath = FilePath.getInstance();
+    int width = op.getWidth();
+    int height = op.getHeight();
+
+    public void run() {
+        int[][] ave = op.rgbRead2gray();
+        //ç°åº¦å˜åŒ–çš„æ“ä½œ
+        //é‡ç‚¹ï¼ŒæŠ€å·§åœ¨è¿™ä¸ªå‚æ•°BufferedImage.TYPE_BYTE_GRAY
+        BufferedImage grayImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                grayImage.setRGB(i, j, ave[i][j]);
+            }
+        }
+        String str = filepath.getUripath_new();
+        try {
+            ImageIO.write(grayImage, "png", new File(str));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
